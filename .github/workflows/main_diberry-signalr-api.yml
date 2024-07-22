@@ -38,18 +38,15 @@ jobs:
       - name: Zip artifact for deployment
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.PACKAGE_PATH }}'
-          pwd
-          zip release.zip ./* -r
-          cp release.zip ../release.zip
+          zip -r release.zip .
           popd
-          ls -la
+          cp ./${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.PACKAGE_PATH }}/release.zip ./release.zip
 
       - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: node-app
           path: release.zip
-
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -61,7 +58,7 @@ jobs:
 
     steps:
       - name: Download artifact from build job
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: node-app
 
@@ -69,17 +66,17 @@ jobs:
         run: unzip release.zip
       
       - name: Login to Azure
-        uses: azure/login@v2
+        uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_21F39602325B4CC2B3E51478CC16E7CF }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_1E660409D60844FDA6901D511A65A7A0 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_CDDA31D4E9B74737A9BE0C71956E6B0B }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_D810AAE223B944DAB5BE10C3C7BD2517 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B50AC9A10C2043CF8659AB1430C99691 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A1EE22F1D9DD426783AF476510834AC2 }}
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         id: fa
         with:
-          app-name: 'diberry-signalr-api'
+          app-name: 'api-jamie'
           slot-name: 'Production'
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          
+         
