@@ -1,13 +1,40 @@
-import { app, InvocationContext } from "@azure/functions";
+import { app, output, CosmosDBv4FunctionOptions, InvocationContext } from "@azure/functions";
 
-export async function signalr-send-message(documents: unknown[], context: InvocationContext): Promise<void> {
-    context.log(`Cosmos DB function processed ${documents.length} documents`);
+const goingOutToSignalR = output.generic({
+    type: 'signalR',
+    name: 'signalR',
+    hubName: 'default',
+    connectionStringSetting: 'SIGNALR_CONNECTION_STRING',
+});
+
+export async function dataToMessage(documents: unknown[], context: InvocationContext): Promise<void> {
+
+    try {
+
+        context.log(`Documents: ${JSON.stringify(documents)}`);
+
+        documents.map(stock => {
+            // @ts-ignore
+            context.log(`Get price ${stock.symbol} ${stock.price}`);
+            context.extraOutputs.set(goingOutToSignalR,
+                {
+                    'target': 'updated',
+                    'arguments': [stock]
+                });
+        });
+    } catch (error) {
+        context.log(`Error: ${error}`);
+    }
 }
 
-app.cosmosDB('signalr-send-message', {
-    connectionStringSetting: 'COSMOSDB_CONNECTION_STRING',
+const options: CosmosDBv4FunctionOptions = {
+    connection: 'COSMOSDB_CONNECTION_STRING',
     databaseName: 'stocksdb',
-    collectionName: 'stocks',
-    createLeaseCollectionIfNotExists: true,
-    handler: signalr-send-message
-});
+    containerName: 'stocks',
+    createLeaseContainerIfNotExists: true,
+    feedPollDelay: 500,
+    handler: dataToMessage,
+    extraOutputs: [goingOutToSignalR],
+};
+
+app.cosmosDB('send-signalr-messages', options);
