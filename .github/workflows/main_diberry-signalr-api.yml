@@ -40,9 +40,10 @@ jobs:
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.PACKAGE_PATH }}'
           pwd
           zip release.zip ./* -r
+          ls -la
           cp release.zip ../release.zip
           popd
-          ls
+          ls -la
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
