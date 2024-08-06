@@ -40,6 +40,13 @@ jobs:
           zip -r release.zip .
           popd
           cp ./${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.PACKAGE_PATH }}/release.zip ./release.zip
+          ls -al
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-app
+          path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
